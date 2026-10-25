@@ -112,6 +112,7 @@ function setupSound() {
   };
   const resume = (e) => {
     if (e.target.closest?.("#sound-toggle")) return; // the button's own click handles it
+    hint.classList.remove("show"); // the visitor has interacted, so the nudge has done its job
     audio.ctx.resume().then(started);
   };
   if (audio.ctx.state === "running") started();
@@ -137,21 +138,21 @@ function setupSound() {
 function setupLightMode() {
   const btn = document.getElementById("theme-toggle");
   const note = document.getElementById("theme-note");
-  const lines = [
-    "Light mode? Out here the only light switch is the Sun, and it's 1 AU away ☀️",
-    "Space is dark by design. I'm just keeping it authentic 🌌",
-    "Turning the lights on would hide all the stars ✨",
-    "Mission control says no: light attracts bugs, and I've fixed enough of those 🐛",
-    "My eyes adjusted to the dark years ago. Yours will too 🔭",
-  ];
-  let idx = 0, timer;
+  let timer;
+  const hide = () => {
+    clearTimeout(timer);
+    note.classList.remove("show");
+  };
   btn.addEventListener("click", () => {
-    note.textContent = lines[idx++ % lines.length];
+    document.getElementById("sound-hint").classList.remove("show"); // same spot: never show both at once
+    note.textContent = "No light mode out here: space is dark, and so is this site 🌌";
     note.classList.add("show");
     dispatchEvent(new Event("lightmode"));
     clearTimeout(timer);
-    timer = setTimeout(() => note.classList.remove("show"), 3800);
+    timer = setTimeout(hide, 3800);
   });
+  // A click or tap anywhere else dismisses it straight away
+  addEventListener("pointerdown", (e) => btn.contains(e.target) || hide(), true);
 }
 
 function init() {
