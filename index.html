@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio</title>
+    <meta name="description" content="Full-stack engineer portfolio: a scroll-through tour of the solar system, from Earth to Pluto." />
+    <meta name="theme-color" content="#070707" />
+    <link rel="icon" href="favicon-64.png" sizes="64x64" type="image/png" />
+    <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Fonts load without blocking the first paint: text shows in the fallback font, then swaps -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Michroma&family=Saira:wght@300;400;500&family=Martian+Mono:wght@300;400;500&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+    <!-- Start the whole module graph and the first screen's textures at once, instead of discovering
+         them one import at a time (keep in sync with the imports in js/ and the textures in planets.js) -->
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" />
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js" />
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/RenderPass.js" />
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js" />
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/OutputPass.js" />
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js" />
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/MaskPass.js" />
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/Pass.js" />
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/CopyShader.js" />
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/LuminosityHighPassShader.js" />
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/OutputShader.js" />
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/environments/RoomEnvironment.js" />
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/geometries/RoundedBoxGeometry.js" />
+    <link rel="modulepreload" href="js/main.js" />
+    <link rel="modulepreload" href="js/astronaut.js" />
+    <link rel="modulepreload" href="js/planets.js" />
+    <link rel="modulepreload" href="js/space.js" />
+    <link rel="modulepreload" href="js/noise.js" />
+    <link rel="modulepreload" href="js/content.js" />
+    <link rel="modulepreload" href="js/hologram.js" />
+    <link rel="modulepreload" href="js/rocket.js" />
+    <link rel="modulepreload" href="js/audio.js" />
+    <link rel="modulepreload" href="js/trivia.js" />
+    <link rel="modulepreload" href="js/sunmarker.js" />
+    <link rel="modulepreload" href="js/iss.js" />
+    <link rel="modulepreload" href="js/callout.js" />
+    <link rel="preload" as="image" href="textures/2k_earth_daymap.webp" type="image/webp" crossorigin="anonymous" />
+    <link rel="preload" as="image" href="textures/2k_earth_nightmap.webp" type="image/webp" crossorigin="anonymous" />
+    <link rel="preload" as="image" href="textures/2k_earth_clouds.webp" type="image/webp" crossorigin="anonymous" />
+    <link rel="preload" as="image" href="textures/1k_moon.webp" type="image/webp" crossorigin="anonymous" />
+    <link rel="preload" as="image" href="textures/2k_stars_milky_way.webp" type="image/webp" crossorigin="anonymous" />
+  </head>
+  <body>
+    <canvas id="space" aria-hidden="true"></canvas>
+
+    <div id="loader" role="status">
+      <div class="orbit"><span></span></div>
+      <p class="mono">T&minus;00:00:03 &middot; Preparing launch sequence</p>
+    </div>
+
+    <header class="nav">
+      <div class="nav-inner">
+        <a href="#home" class="logo" id="logo"></a>
+        <nav class="nav-links" id="nav-links">
+          <a href="#about" data-nav="1">About</a>
+          <a href="#experience" data-nav="2">Experience</a>
+          <a href="#projects" data-nav="3">Projects</a>
+          <a href="#education" data-nav="4">Education</a>
+          <a href="#interests" data-nav="5">Interests</a>
+          <a href="#contact" class="nav-contact">Contact</a>
+        </nav>
+        <div class="nav-actions">
+          <button class="icon-btn theme-btn" id="theme-toggle" aria-label="Light mode" title="Light mode">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+            </svg>
+          </button>
+          <button class="icon-btn sound-btn" id="sound-toggle" aria-label="Toggle sound" aria-pressed="false" title="Sound">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 5 6 9H2v6h4l5 4V5z" />
+              <path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14" />
+              <path class="mute" d="m22 9-6 6M16 9l6 6" />
+            </svg>
+          </button>
+          <div id="theme-note" class="theme-note" role="status" aria-live="polite"></div>
+          <div id="sound-hint" class="theme-note sound-hint">🔊 Click anywhere to turn on sound</div>
+          <button class="icon-btn menu-btn" id="menu-toggle" aria-label="Open menu" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="hud mono" aria-hidden="true">
+      <div><span class="hud-label">MET</span> <span>T+<span id="hud-clock">00:00:00</span></span></div>
+      <div><span class="hud-label">LOC</span> <span id="hud-sector">EARTH · HOME</span></div>
+      <div><span class="hud-label">SUN</span> <span><span id="hud-dist">1.00</span> AU</span></div>
+    </div>
+
+    <div id="bubble" class="bubble" aria-live="polite"></div>
+    <button id="skip-intro" class="skip-intro mono" type="button">Skip intro &rarr;</button>
+
+    <main>
+      <section id="home" class="stop hero" data-stop>
+        <div class="hero-copy">
+          <p class="eyebrow mono" id="hero-eyebrow"><span class="dot"></span>Transmission from Earth</p>
+          <h1 id="hero-name"></h1>
+          <h2 class="hero-role" id="hero-role"></h2>
+          <p class="hero-tagline" id="hero-tagline"></p>
+          <div class="hero-cta" id="hero-cta">
+            <button class="btn btn-primary" id="say-hi" type="button">Say hi</button>
+          </div>
+        </div>
+        <a href="#about" class="scroll-hint mono"><span class="line"></span>Scroll to launch</a>
+      </section>
+
+      <div class="travel" data-travel aria-hidden="true"></div>
+
+      <section id="about" class="stop" data-stop>
+        <div class="panel glass">
+          <div class="doc-head"><span class="sec">Section 01</span><span class="meta">Mars / 1.52 AU</span></div>
+          <div id="about-text"></div>
+          <div class="skills" id="skills"></div>
+        </div>
+      </section>
+
+      <div class="travel" data-travel aria-hidden="true"></div>
+
+      <!-- Taller than the others: the panel stays pinned while scrolling walks back through each level -->
+      <section id="experience" class="stop flip xp" data-stop>
+        <div class="panel glass xp-panel">
+          <div class="doc-head"><span class="sec">Section 02</span><span class="meta">Jupiter / 5.20 AU</span></div>
+          <div class="xp-player">
+            <div class="xp-rank">
+              <span class="mono xp-label">Current rank</span>
+              <span class="xp-title" id="xp-title"></span>
+            </div>
+            <span class="xp-lv mono" id="xp-lv"></span>
+          </div>
+          <div class="xp-bar" aria-hidden="true"><div class="xp-fill" id="xp-fill"></div><div class="xp-ticks" id="xp-ticks"></div></div>
+          <div class="xp-levels" id="xp-levels"></div>
+          <p class="xp-hint mono" id="xp-hint">Keep scrolling for earlier levels ↓</p>
+        </div>
+      </section>
+
+      <div class="travel" data-travel aria-hidden="true"></div>
+
+      <section id="projects" class="stop" data-stop>
+        <div class="panel panel-wide">
+          <div class="glass panel-head">
+            <div class="doc-head"><span class="sec">Section 03</span><span class="meta">Saturn / 9.58 AU</span></div>
+            <p class="muted">Each project is one of Saturn's real moons, from hazy Titan to tiny Hyperion. Hover a card to target its moon.</p>
+          </div>
+          <div class="project-grid" id="project-grid"></div>
+        </div>
+      </section>
+
+      <div class="travel" data-travel aria-hidden="true"></div>
+
+      <section id="education" class="stop flip" data-stop>
+        <div class="panel glass">
+          <div class="doc-head"><span class="sec">Section 04</span><span class="meta">Neptune / 30.07 AU</span></div>
+          <div class="timeline" id="education-list"></div>
+        </div>
+      </section>
+
+      <div class="travel" data-travel aria-hidden="true"></div>
+
+      <section id="interests" class="stop last" data-stop>
+        <div class="panel panel-wide glass">
+          <div class="doc-head"><span class="sec">Section 05</span><span class="meta">Pluto / 39.48 AU</span></div>
+          <p class="muted interests-intro">Off duty, out at the edge of the solar system: what I do when I'm not shipping code.</p>
+          <div class="interests" id="interests-list"></div>
+        </div>
+
+        <footer class="site-footer glass" id="contact">
+          <div class="footer-main">
+            <div>
+              <p class="mono footer-kicker">Open a channel</p>
+              <p class="muted footer-text">A radio signal from Pluto takes about five and a half hours to reach Earth. I reply faster than that. I'm open to interesting problems, collaborations and full-time roles.</p>
+            </div>
+            <div class="contact-links" id="contact-links"></div>
+          </div>
+          <p class="footer-credits mono" id="footer-text"></p>
+        </footer>
+      </section>
+    </main>
+
+    <script src="data.js"></script>
+    <script>
+      // Fetch the remote content (data.js → contentUrl) now, in parallel with three.js, rather than after it
+      if (PORTFOLIO.contentUrl)
+        window.remoteContent = fetch(PORTFOLIO.contentUrl, { cache: "no-store" })
+          .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+          .catch((err) => (console.warn(err), null));
+    </script>
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

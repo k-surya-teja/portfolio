@@ -1,0 +1,1732 @@
+/* Mission control: near-black panels, bone-white text, one pale solar-gold accent. No gradients, no glow. */
+:root {
+  --bg: #070707;
+  --panel: rgba(9, 9, 9, 0.8);
+  --text: #ece6d9;
+  --muted: #a39d92;
+  --dim: #858078; /* the dimmest text that still reads at 4.5:1 (WCAG AA) on the panels */
+  --line: rgba(236, 230, 217, 0.14);
+  --line-strong: rgba(236, 230, 217, 0.32);
+  --accent: #e3c27a;
+  --accent-2: #efd49a;
+  --radius: 2px;
+  /* Space Age: Eurostile-style display, technical body, mono for instrumentation */
+  --display: "Michroma", "Eurostile", sans-serif;
+  --sans: "Saira", system-ui, sans-serif;
+  --mono: "Martian Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: 16.5px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--accent);
+  color: #000;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+#space {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  z-index: 0;
+}
+
+/* Without WebGL, fall back to a sparse CSS starfield */
+.no-webgl #space {
+  display: none;
+}
+
+.no-webgl {
+  background:
+    radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 70% 80%, #fff4e8, transparent),
+    radial-gradient(1px 1px at 40% 60%, #fff, transparent),
+    radial-gradient(1px 1px at 85% 15%, #dfe8ff, transparent),
+    var(--bg);
+  background-attachment: fixed;
+  background-size: 300px 300px, 400px 400px, 500px 500px, 350px 350px, auto;
+}
+
+main,
+.nav,
+.hud {
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- loader ---------- */
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 28px;
+  background: #000;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: opacity 0.8s ease, visibility 0.8s;
+}
+
+#loader.done {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.orbit {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  position: relative;
+  animation: spin 2s linear infinite;
+}
+
+.orbit::before {
+  content: "";
+  position: absolute;
+  inset: 20px;
+  border-radius: 50%;
+  background: var(--text);
+}
+
+.orbit span {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- nav ---------- */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 0 32px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(7, 7, 7, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.nav-inner {
+  max-width: 1280px;
+  height: 60px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--display);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+}
+
+.logo .dim {
+  color: var(--dim);
+}
+
+.logo-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  font-family: var(--display);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.nav-links a {
+  color: var(--muted);
+  padding: 4px 0;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.nav-links a:hover {
+  color: var(--text);
+}
+
+.nav-links a.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.nav-actions {
+  position: relative;
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.icon-btn:hover {
+  border-color: var(--line-strong);
+}
+
+.menu-btn {
+  display: none;
+}
+
+.sound-btn {
+  color: var(--dim);
+}
+
+.sound-btn .wave {
+  display: none;
+}
+
+.sound-btn.on {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.sound-btn.on .wave {
+  display: block;
+}
+
+.sound-btn.on .mute {
+  display: none;
+}
+
+/* Sound is wanted but the browser is waiting for a click: pulse instead of claiming "on" */
+.sound-btn.waiting {
+  color: var(--accent);
+  border-color: var(--accent);
+  animation: sound-wait 1.6s ease-in-out infinite;
+}
+
+@keyframes sound-wait {
+  50% {
+    box-shadow: 0 0 0 5px rgba(227, 194, 122, 0.18);
+  }
+}
+
+.sound-hint {
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+.theme-btn {
+  color: var(--dim);
+}
+
+.theme-btn:hover {
+  color: var(--accent);
+}
+
+/* Reply shown when someone asks for light mode */
+.theme-note {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 10px 14px;
+  background: rgba(7, 7, 7, 0.92);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.theme-note.show {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- HUD ---------- */
+.hud {
+  position: fixed;
+  right: 32px;
+  bottom: 28px;
+  z-index: 5;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--text);
+  pointer-events: none;
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  background: rgba(7, 7, 7, 0.72);
+  border: 1px solid var(--line);
+}
+
+.text-right .hud {
+  right: auto;
+  left: 32px;
+}
+
+/* On the last stop the footer spans the bottom, so the HUD steps aside */
+.at-end .hud {
+  opacity: 0;
+}
+
+.hud-label {
+  color: var(--dim);
+  display: inline-block;
+  width: 44px;
+}
+
+/* ---------- trivia (only while flying between planets) ---------- */
+.trivia {
+  position: fixed;
+  left: 32px;
+  bottom: 28px;
+  z-index: 5;
+  width: min(340px, calc(100vw - 32px));
+  padding: 12px 16px 14px;
+  background: rgba(7, 7, 7, 0.72);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Sits in the corner the HUD isn't using */
+.text-right .trivia {
+  left: auto;
+  right: 32px;
+}
+
+.trivia.show {
+  opacity: 1;
+  transform: none;
+}
+
+.trivia-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.trivia-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+}
+
+.trivia-text {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+  transition: opacity 0.18s ease;
+}
+
+.trivia.swap .trivia-text {
+  opacity: 0;
+}
+
+/* ---------- sun marker: points at the Sun, which is usually behind the camera ---------- */
+.sun-marker {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transition: opacity 0.6s ease;
+}
+
+.sun-icon {
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff6e0 0 35%, #e3c27a 70%);
+  box-shadow: 0 0 10px 3px rgba(227, 194, 122, 0.55);
+  animation: sun-pulse 2.6s ease-in-out infinite;
+}
+
+/* Rotated toward the Sun; only shown when the Sun is off screen */
+.sun-arrow {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+.sun-arrow::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  margin-top: -5px;
+  border: 5px solid transparent;
+  border-left: 7px solid var(--accent);
+  border-right: 0;
+}
+
+.sun-marker.offscreen .sun-arrow {
+  display: block;
+}
+
+.sun-label {
+  position: absolute;
+  left: 34px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.sun-label b {
+  font-weight: 400;
+  color: var(--accent);
+}
+
+.sun-marker.label-left .sun-label {
+  left: auto;
+  right: 34px;
+}
+
+.sun-marker:hover .sun-label {
+  color: var(--text);
+}
+
+.sun-note {
+  position: fixed;
+  left: 50%;
+  top: 76px;
+  z-index: 6;
+  width: max-content;
+  max-width: min(380px, calc(100vw - 32px));
+  padding: 10px 14px;
+  background: rgba(7, 7, 7, 0.92);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.sun-note.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@keyframes sun-pulse {
+  50% {
+    box-shadow: 0 0 16px 6px rgba(227, 194, 122, 0.35);
+  }
+}
+
+.intro .sun-marker,
+.sun-marker.covered {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------- NASA trivia beside the hovered ISS ---------- */
+.craft-tip {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 6;
+  width: min(300px, calc(100vw - 24px));
+  padding: 10px 14px 12px;
+  background: rgba(7, 7, 7, 0.88);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.craft-tip.show {
+  opacity: 1;
+}
+
+.craft-tip-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.craft-tip p {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+/* ---------- planet name callout (points at the planet after landing) ---------- */
+.callout-svg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1; /* behind the sections (main is 2), above the canvas */
+  pointer-events: none;
+  overflow: visible;
+}
+
+.callout-line {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.callout-dot {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 rgba(227, 194, 122, 0.6);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.planet-callout {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  gap: 4px;
+  pointer-events: none;
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+  transition: opacity 0.2s ease 0.35s, clip-path 0.45s ease 0.4s;
+}
+
+.callout-name {
+  justify-self: start;
+  padding: 6px 12px 5px;
+  background: var(--accent);
+  color: #0d0c09;
+  font-family: var(--display);
+  font-size: 1.15rem;
+  letter-spacing: 0.14em;
+  box-shadow: 0 0 24px rgba(227, 194, 122, 0.35);
+}
+
+.callout-tag {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-shadow: 0 1px 6px #000;
+}
+
+.callout-on .callout-line {
+  stroke-dashoffset: 0;
+}
+
+.callout-on .callout-dot {
+  opacity: 1;
+  animation: callout-ping 1.8s ease-out infinite;
+}
+
+.callout-on .planet-callout {
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+}
+
+@keyframes callout-ping {
+  0% {
+    box-shadow: 0 0 0 0 rgba(227, 194, 122, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 0 14px rgba(227, 194, 122, 0);
+  }
+}
+
+/* ---------- speech bubble ---------- */
+.bubble {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 6;
+  padding: 8px 14px;
+  background: var(--text);
+  color: #0a0a0a;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  margin-left: -6px;
+  border: 6px solid transparent;
+  border-bottom: 0;
+  border-top-color: var(--text);
+}
+
+.bubble.show {
+  opacity: 1;
+}
+
+/* ---------- launch intro ---------- */
+.nav,
+.hud,
+.hero-copy,
+.scroll-hint {
+  transition: opacity 1s ease 0.2s, transform 1s ease 0.2s;
+}
+
+.intro .nav,
+.intro .hud,
+.intro .hero-copy,
+.intro .scroll-hint {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.intro .hero-copy {
+  transform: translateY(24px);
+}
+
+.skip-intro {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+
+.intro .skip-intro {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---------- sections ---------- */
+.stop {
+  min-height: 100vh;
+  padding: 40vh 32px 20vh;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Empty space between planets: scrolling through it is the flight */
+.travel {
+  height: 180vh;
+}
+
+.panel {
+  max-width: 540px;
+}
+
+.panel-wide {
+  max-width: 760px;
+}
+
+/* Alternate sides: on these stops the planet is on the left, so the text sits on the right */
+.flip .panel {
+  margin-left: auto;
+}
+
+.glass {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.panel.glass,
+.panel-head {
+  padding: 0 40px 36px;
+}
+
+/* SECTION 01 ............................ MARS / 1.52 AU */
+.doc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 -40px 26px;
+  padding: 14px 40px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.doc-head .sec {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+}
+
+.doc-head .sec::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+}
+
+.doc-head .meta {
+  color: var(--dim);
+}
+
+/* ---------- hero ---------- */
+.hero {
+  min-height: 100vh;
+  /* vertically centred between the nav and the scroll hint */
+  padding-top: 60px;
+  padding-bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+.hero-copy {
+  max-width: 560px;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.eyebrow .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: blink 1.6s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.hero h1 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(2.3rem, 4.6vw, 4rem);
+  line-height: 1.04;
+  letter-spacing: 0.01em;
+}
+
+/* Four letters can go much bigger than a full name */
+.hero h1.is-callsign {
+  font-size: clamp(4rem, 9vw, 7.5rem);
+  line-height: 1;
+  letter-spacing: 0.08em;
+}
+
+.hero-role {
+  font-family: var(--mono);
+  font-weight: 400;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-strong);
+  max-width: 420px;
+}
+
+.hero-tagline {
+  color: var(--muted);
+  font-size: 1.02rem;
+  margin-top: 16px;
+  max-width: 460px;
+}
+
+.hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 34px;
+}
+
+.scroll-hint {
+  position: absolute;
+  left: 32px;
+  bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.scroll-hint .line {
+  width: 1px;
+  height: 36px;
+  background: var(--line-strong);
+  position: relative;
+  overflow: hidden;
+}
+
+.scroll-hint .line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -12px;
+  width: 1px;
+  height: 12px;
+  background: var(--accent);
+  animation: drop 1.8s ease-in-out infinite;
+}
+
+@keyframes drop {
+  to {
+    transform: translateY(48px);
+  }
+}
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  font: 400 0.7rem var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  border: 1px solid var(--line-strong);
+  background: rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.btn:hover {
+  border-color: var(--text);
+  background: rgba(236, 230, 217, 0.06);
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0a0a0a;
+}
+
+.btn-primary:hover {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+}
+
+/* ---------- about: spec table ---------- */
+#about-text p {
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+#about-text p:first-child {
+  color: var(--text);
+}
+
+.skills {
+  margin-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.skill-group {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.skill-group > * {
+  min-width: 0;
+}
+
+.skill-group h3 {
+  font: 400 0.66rem var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding-top: 4px;
+}
+
+.spec {
+  font-size: 0.92rem;
+  color: var(--text);
+}
+
+.spec span {
+  display: inline-block; /* wrap between items, never inside one */
+}
+
+.spec span + span::before {
+  content: "·";
+  margin: 0 8px;
+  color: var(--accent);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 3px 9px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+/* ---------- projects ---------- */
+.panel-head {
+  margin-bottom: 12px;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px 24px;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.card:hover,
+.card:focus-visible {
+  border-color: var(--accent);
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 -24px 16px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.moon-id {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+}
+
+.moon-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: blink 1.6s steps(1) infinite;
+}
+
+/* Name on the left, Live / Code buttons on the right; long names wrap beside the buttons */
+.card-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.card h3 {
+  min-width: 0;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.card p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  flex: 1;
+  margin-bottom: 18px;
+}
+
+.card-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  font: 400 0.66rem var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.card-link svg {
+  width: 14px;
+  height: 14px;
+}
+
+.card-link:hover {
+  border-color: var(--text);
+}
+
+.card-link.live {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0a0a0a;
+}
+
+.card-link.live:hover {
+  background: var(--accent-2);
+}
+
+/* ---------- experience ---------- */
+.timeline {
+  border-left: 1px solid var(--line-strong);
+  padding-left: 24px;
+}
+
+.job {
+  position: relative;
+}
+
+.job + .job {
+  margin-top: 22px;
+}
+
+.job::before {
+  content: "";
+  position: absolute;
+  left: -28px;
+  top: 10px;
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+}
+
+.job h3 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+.job h3 span {
+  color: var(--muted);
+}
+
+.job .period {
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin: 4px 0 14px;
+}
+
+.job ul {
+  list-style: none;
+}
+
+.job li {
+  position: relative;
+  padding-left: 20px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.job li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--dim);
+}
+
+.timeline-label {
+  margin: 30px 0 12px;
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* ---------- experience: scroll to level up ---------- */
+.xp {
+  /* extra height to scroll through while the panel stays pinned */
+  min-height: 330vh;
+  padding-top: 30vh;
+}
+
+.xp-panel {
+  position: sticky;
+  top: 84px;
+  max-height: calc(100vh - 110px);
+  /* No inner scrollbar: the page scroll moves the text inside (see setupLevels) */
+  overflow: hidden;
+}
+
+.xp-player {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.xp-label {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 4px;
+}
+
+.xp-title {
+  font-family: var(--display);
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+.xp-lv {
+  flex-shrink: 0;
+  padding: 4px 9px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+}
+
+.xp-bar {
+  position: relative;
+  height: 6px;
+  margin: 16px 0 34px;
+  background: rgba(236, 230, 217, 0.08);
+  border: 1px solid var(--line);
+}
+
+.xp-fill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 0.25s linear;
+}
+
+.xp-ticks span {
+  position: absolute;
+  top: 12px;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+}
+
+.xp-ticks span:first-child {
+  transform: none;
+}
+
+.xp-ticks span:last-child {
+  transform: translateX(-100%);
+}
+
+.lv {
+  border: 1px solid var(--line);
+  margin-bottom: 8px;
+  transition: border-color 0.4s, opacity 0.4s;
+}
+
+.lv-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+.lv-num {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+}
+
+.lv-name {
+  flex: 1;
+  font-family: var(--display);
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.lv-name span {
+  color: var(--muted);
+}
+
+.lv-state {
+  color: var(--accent);
+  display: flex;
+}
+
+/* The current role leads the list and stays highlighted even while folded */
+.lv.current {
+  border-color: var(--accent);
+  background: rgba(227, 194, 122, 0.07);
+}
+
+.lv.current .lv-num {
+  color: var(--accent);
+}
+
+.current-badge {
+  padding: 3px 7px;
+  background: var(--accent);
+  color: #0a0a0a;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lv-body {
+  padding: 0 14px;
+}
+
+.lv.active {
+  border-color: var(--accent);
+  animation: levelup 0.9s ease;
+}
+
+.lv.active .lv-num {
+  color: var(--accent);
+}
+
+/* Only the current level is expanded; completed levels fold to one line */
+.lv:not(.active) .lv-body {
+  display: none;
+}
+
+.lv.active .lv-body {
+  display: block;
+  padding-bottom: 12px;
+}
+
+.lv.active .lv-body li {
+  animation: pointer-in 0.45s ease both;
+}
+
+.lv.active .lv-body li:nth-child(2) { animation-delay: 0.06s; }
+.lv.active .lv-body li:nth-child(3) { animation-delay: 0.12s; }
+.lv.active .lv-body li:nth-child(4) { animation-delay: 0.18s; }
+.lv.active .lv-body li:nth-child(5) { animation-delay: 0.24s; }
+.lv.active .lv-body li:nth-child(6) { animation-delay: 0.3s; }
+.lv.active .lv-body li:nth-child(7) { animation-delay: 0.36s; }
+
+.lv .period {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin: 0 0 10px;
+}
+
+.lv ul {
+  list-style: none;
+}
+
+.lv li {
+  position: relative;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  margin-bottom: 6px;
+}
+
+.lv li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+.side-quest {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line-strong);
+}
+
+.sq-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+
+.xp-hint {
+  margin-top: 10px;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  animation: blink 1.6s steps(1) infinite;
+}
+
+@keyframes levelup {
+  0% { box-shadow: 0 0 0 0 rgba(227, 194, 122, 0.55); }
+  100% { box-shadow: 0 0 0 14px rgba(227, 194, 122, 0); }
+}
+
+@keyframes pointer-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- interests: numbered log entries in two columns ---------- */
+.interests-intro {
+  margin-bottom: 14px;
+}
+
+.interests {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.interest {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  column-gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.interest-num {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  padding-top: 4px;
+}
+
+.interest h3 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.interest p {
+  grid-column: 2;
+  margin-top: 4px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* ---------- interests + footer: the last screen of the page ----------
+   Exactly one view: the footer sits at the bottom and the panel floats centred in the space between
+   the nav and the footer (its auto margins share out the free space). Kept compact so both fit. */
+.last {
+  min-height: 100vh;
+  padding-top: 76px; /* clears the fixed nav */
+  padding-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.last > .panel {
+  margin-block: auto;
+}
+
+.site-footer {
+  padding: 18px 28px 12px;
+}
+
+.footer-main {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.footer-kicker {
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.footer-text {
+  max-width: 560px;
+}
+
+.contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.footer-credits {
+  padding-top: 10px;
+  font-size: 0.62rem;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+}
+
+.footer-credits a {
+  color: var(--muted);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+/* ---------- mobile: planet sits at the top, content scrolls over it ---------- */
+@media (max-width: 820px) {
+  .nav {
+    padding: 0 16px;
+  }
+
+  .menu-btn {
+    display: grid;
+  }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 0;
+    background: rgba(7, 7, 7, 0.96);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .nav-links a {
+    padding: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .stop {
+    padding: 55vh 16px 20vh;
+  }
+
+  .travel {
+    height: 150vh;
+  }
+
+  .hero {
+    padding-top: 0;
+    padding-bottom: 100px;
+    justify-content: flex-end;
+  }
+
+  .hero-copy {
+    margin: 0 -16px;
+    padding: 80px 16px 0;
+    background: linear-gradient(to top, rgba(7, 7, 7, 0.95) 55%, rgba(7, 7, 7, 0));
+  }
+
+  .scroll-hint {
+    display: none;
+  }
+
+  .last {
+    gap: 10px;
+    padding-top: 72px;
+    padding-bottom: 12px;
+  }
+
+  /* Phones: names only, two to a row, and a tighter footer, so the last screen still fits in one view */
+  .interests {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 16px;
+  }
+
+  .interest {
+    padding: 9px 0;
+  }
+
+  .interest p {
+    display: none;
+  }
+
+  .interests-intro {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+
+  .footer-main {
+    gap: 12px;
+  }
+
+  .footer-text {
+    font-size: 0.85rem;
+  }
+
+  .contact-links {
+    gap: 6px;
+  }
+
+  .contact-links .btn {
+    padding: 8px 11px;
+  }
+
+  .footer-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .site-footer {
+    padding: 16px 18px 10px;
+  }
+
+  .xp {
+    min-height: 300vh;
+  }
+
+  .panel.glass,
+  .panel-head {
+    padding: 0 24px 24px;
+  }
+
+  .doc-head {
+    margin: 0 -24px 20px;
+    padding: 12px 24px;
+  }
+
+  .project-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .skill-group {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .hud {
+    display: none;
+  }
+
+  .sun-label {
+    display: none;
+  }
+
+  .callout-name {
+    font-size: 0.9rem;
+  }
+
+  .trivia,
+  .text-right .trivia {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: auto;
+  }
+}
+
+/* Short screens (small laptops, iPhone SE): trim the last screen further so the interests and the
+   footer still fit in one view */
+@media (max-height: 650px) {
+  .interests-intro {
+    display: none;
+  }
+
+  #interests .panel.glass {
+    padding-bottom: 18px;
+  }
+
+  .interest {
+    padding: 6px 0;
+  }
+
+  .site-footer {
+    padding-top: 14px;
+  }
+
+  .footer-main {
+    padding-bottom: 10px;
+  }
+
+  .footer-credits {
+    padding-top: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .orbit,
+  .eyebrow .dot,
+  .live-dot,
+  .scroll-hint .line::after,
+  .xp-hint,
+  .lv.active,
+  .lv.active .lv-body li,
+  .sun-icon,
+  .sound-btn.waiting,
+  .callout-on .callout-dot {
+    animation: none;
+  }
+}
